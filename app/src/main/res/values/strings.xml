@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Calculator</string>
+    <string name="action_btn_AC">AC</string>
+    <string name="action_btn_breketOpen">(</string>
+    <string name="action_btn_breketClose">)</string>
+    <string name="action_btn_div">/</string>
+    <string name="action_btn_multi">*</string>
+    <string name="action_btn_plus">+</string>
+    <string name="action_btn_equal">=</string>
+    <string name="action_btn_minus">-</string>
+
+    <string name="number_btn_1">1</string>
+    <string name="number_btn_2">2</string>
+    <string name="number_btn_3">3</string>
+    <string name="number_btn_4">4</string>
+    <string name="number_btn_5">5</string>
+    <string name="number_btn_6">6</string>
+    <string name="number_btn_7">7</string>
+    <string name="number_btn_8">8</string>
+    <string name="number_btn_9">9</string>
+    <string name="number_btn_0">0</string>
+    <string name="number_btn_point">.</string>
+    <string name="number_btn_back">Back</string>
+
+</resources>
