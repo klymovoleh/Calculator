@@ -1,22 +1,55 @@
 package com.example.calculator
 
 import android.os.Bundle
+import android.util.TypedValue
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import net.objecthunter.exp4j.ExpressionBuilder
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var operation: TextView
-    private lateinit var resultText: TextView
+    private lateinit var result: TextView
+    private val viewModel: CalculatorViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         operation = findViewById(R.id.math_operation)
-        resultText = findViewById(R.id.result_text)
+        result = findViewById(R.id.result_text)
+
+        if (savedInstanceState == null) {
+            operation.text = viewModel.operationText
+            result.text = viewModel.resultText
+        } else {
+            operation.text = savedInstanceState.getString("KEY", "")
+            result.text = savedInstanceState.getString("RESULT_KEY", "")
+        }
 
         setupButtons()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("KEY", operation.text.toString())
+        outState.putString("RESULT_KEY", viewModel.resultText)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        val savedText = savedInstanceState.getString("KEY", "")
+        operation.text = savedText
+        val savedResult = savedInstanceState.getString("RESULT_KEY", "")
+        if (savedResult != null && savedResult.isNotEmpty()) {
+            result.text = savedResult
+            if (savedResult.contains("Помилка")) {
+                result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            } else {
+                result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f)
+            }
+        }
     }
 
     private fun setupButtons() {
@@ -50,46 +83,60 @@ class MainActivity : AppCompatActivity() {
             in 11..18 -> operation.textSize = 30f
             in 19..(operation.text.length + 1) -> operation.textSize = 20f
         }
-
     }
 
-    private fun evaluateExpression() {
+    private fun evaluateExpression(): String? {
         try {
             val expression = operation.text.toString()
             val ex = ExpressionBuilder(expression).build()
-            val result = ex.evaluate()
+            val resultExp = ex.evaluate()
 
-            val longRes = result.toLong()
-            if (result == longRes.toDouble()) resultText.text = longRes.toString()
-            else {
-                resultText.text = result.toString()
-                resultText.textSize = 30f
+            val longRes = resultExp.toLong()
+            val resultString = if (resultExp == longRes.toDouble()) {
+                longRes.toString()
+            } else {
+                resultExp.toString()
             }
 
+            result.text = resultString
+            result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f)
+
+            // Зберігаємо у ViewModel
+            viewModel.operationText = operation.text.toString()
+            viewModel.resultText = resultString
+
+            return resultString
         } catch (e: ArithmeticException) {
-            // Обробка помилок ділення на нуль
-            resultText.text = "Помилка: Ділення на нуль"
-            resultText.textSize = 20f
+            result.text = "Помилка: Ділення на нуль"
+            result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            return null
         } catch (e: IllegalArgumentException) {
-            // Обробка помилок некоректного математичного выразу
-            resultText.text = "Помилка: Некоректний вираз"
-            resultText.textSize = 20f
-        } catch (e: Exception) {
-            // Обробка інших несподіваних помилок
             val message = "Помилка: Некоректний вираз"
-            resultText.text = message
-            resultText.textSize = 20f
+            result.text = message
+            viewModel.resultText = message
+            result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            return null
+        } catch (e: Exception) {
+            val message = "Помилка: Некоректний вираз"
+            result.text = message
+            viewModel.resultText = message
+            result.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            return null
         }
     }
 
+
     private fun handleBackspace() {
-        val str = operation.text.toString()
-        if (str.isNotEmpty()) operation.text = str.substring(0, str.length - 1)
-        resultText.text = ""
+        val str = operation.text
+        if (str.isNotEmpty()) {
+            operation.text = str.substring(0,str.length - 1)
+        }
+        result.text = ""
     }
 
     private fun clearTextViews() {
         operation.text = ""
-        resultText.text = ""
+        result.text = ""
     }
+
 }
